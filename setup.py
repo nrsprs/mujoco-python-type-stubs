@@ -7,5 +7,5 @@ setup(
     description="PEP 561 type stubs for mujoco-stubs",
     version='1.0',
     packages=['mujoco-stubs'],
-    package_data={"mujoco-stubs": ['mujoco.pyi', '__init__.pyi']},
+    package_data={"mujoco-stubs": ['*.pyi', 'rendering/*.pyi', 'rendering/classic/*.pyi']},
 )

@@ -1,28 +1,38 @@
 # mujoco-stubs
-Mujoco Python Stubs for Code Completion
 
-Once installed, your IDE will provide full code completion for MuJoCo's Python API.
+PEP 561 type stubs for MuJoCo, generated from the installed MuJoCo with
+`stubgen` (mypy). Type checkers (ty, pyright) and IDE completion read them
+from `site-packages/mujoco-stubs/`.
 
-## Installation
+## Install (this repo)
 
-Clone the repository and install it in editable mode:
+`uv sync` installs this package non-editable as a dev dependency
+(see `pyproject.toml`). Do not use `pip install -e .`: checkers discover
+stub packages by scanning `site-packages` for a real `mujoco-stubs/`
+directory, which an editable install does not create.
+
+## Regenerating after a MuJoCo version change
 
 ```bash
-git clone https://github.com/I-am-Future/mujoco-stubs.git
 cd mujoco-stubs
-pip install -e .
+uv run python gen_mujoco_stubs.py
+uv sync --reinstall-package mujoco-stubs
 ```
 
-## Bonus: Generating (updating) `.pyi` files if needed
+The script runs `stubgen` against the venv's `mujoco`, applies fixups for
+stubgen artifacts (nanobind parameter ordering, `MjSpec.compile` return
+type, runtime-only module attributes), and syncs the result into the
+`mujoco-stubs/` stub package.
 
-The script `mujoco-gen_mujoco_stubs.py` automatically generates MuJoCo `.pyi` stub files. If you need to update the stubs / do some modifications, you can run this script with:
+If generation fails with "Critical error during semantic analysis", a
+broken stub set in `site-packages` is poisoning `stubgen`'s import
+analysis: `uv pip uninstall mujoco-stubs`, regenerate, then `uv sync`.
 
-```bash
-python gen_mujoco_stubs.py
-```
+## Layout notes
 
-**NOTE:** If `stubgen` is missing, install `mypy` to enable stub generation:
-
-```bash
-pip install mypy
-```
+- `mujoco-stubs/__init__.pyi` mirrors the star-imports of the real
+  `mujoco/__init__.py` so `mujoco.X` and `mujoco._sub.X` name the same
+  symbols. ty only honors star-imports in a stub package `__init__.pyi`;
+  `Renderer` is re-exported through the `_renderer.pyi` shim.
+- `mujoco.gl_context` and `mujoco.renderer` (deprecated shims) are not
+  stubbed; the real modules live under `mujoco.rendering.classic`.
